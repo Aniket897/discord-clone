@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import FileUpload from "../file-upload";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-model-store";
+import { useEffect } from "react";
 
 const formSchema = z.object({
     name: z.string().min(1, {
@@ -41,9 +42,10 @@ const formSchema = z.object({
 
 
 
-const CreateServerModal = () => {
+const EditServerModal = () => {
     const router = useRouter();
-    const { isOpen, onClose, type } = useModal();
+    const { isOpen, onClose, type, data } = useModal();
+    const { server } = data;
 
 
     const form = useForm({
@@ -54,11 +56,19 @@ const CreateServerModal = () => {
         }
     });
 
+
+    useEffect(() => {
+    if (server) {
+        form.setValue("name", server.name)
+        form.setValue("imageUrl", server.imageUrl)
+    }
+    }, [server])
+
     const isLoading = form.formState.isSubmitting;
 
     const handleSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            await axios.post('/api/servers', values);
+            await axios.patch(`/api/servers/${server?.id}`, values);
             form.reset();
             router.refresh();
             close();
@@ -67,7 +77,7 @@ const CreateServerModal = () => {
         }
     }
 
-    const isModalOpen = isOpen && type === "createServer";
+    const isModalOpen = isOpen && type === "editServer";
 
 
     const close = () => {
@@ -129,7 +139,7 @@ const CreateServerModal = () => {
                             />
                             <DialogFooter className="w-full">
                                 <Button type="submit">
-                                    Create
+                                    Update
                                 </Button>
                             </DialogFooter>
                         </div>
@@ -141,4 +151,4 @@ const CreateServerModal = () => {
     )
 }
 
-export default CreateServerModal;
+export default EditServerModal;

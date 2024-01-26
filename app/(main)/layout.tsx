@@ -8,7 +8,7 @@ const MainLayout = async (
             <div className="hidden md:flex w-[75px] h-full">
                 <NavSidebar/>
             </div>
-            <div className="h-full">
+            <div className="h-full flex-1">
                 {children}
             </div>
         </div>
