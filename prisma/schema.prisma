@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+model Profile {
+    id       String    @id @default(uuid()) @map("_id")
+    userId   String    @unique
+    name     String
+    imageUrl String
+    email    String
+    servers  Server[]
+    members  Member[]
+    channels Channel[]
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+}
+
+model Server {
+    id         String @id @default(uuid()) @map("_id")
+    name       String
+    imageUrl   String
+    inviteCode String
+
+    profileId String
+    profile   Profile @relation(fields: [profileId], references: [id])
+
+    members  Member[]
+    channels Channel[]
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    @@index([profileId])
+}
+
+enum MemberRole {
+    ADMIN
+    MODERATOR
+    GUEST
+}
+
+model Member {
+    id   String     @id @default(uuid()) @map("_id")
+    role MemberRole @default(GUEST)
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    profileId String
+    profile   Profile @relation(fields: [profileId], references: [id])
+
+    serverId String
+    server   Server @relation(fields: [serverId], references: [id])
+
+    @@index([profileId])
+    @@index([serverId])
+}
+
+enum ChannerType {
+    TEXT
+    AUDIO
+    VIDEO
+}
+
+model Channel {
+    id   String      @id @default(uuid()) @map("_id")
+    name String
+    type ChannerType @default(TEXT)
+
+    createAt DateTime @default(now())
+    updateAt DateTime @updatedAt
+
+    profileId String
+    profile   Profile @relation(fields: [profileId], references: [id])
+
+    serverId String
+    server   Server @relation(fields: [serverId], references: [id])
+
+    @@index([serverId])
+    @@index([profileId])
+}
